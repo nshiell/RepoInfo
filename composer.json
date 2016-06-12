@@ -1,0 +1,13 @@
+{
+    "require-dev": {
+        "phpunit/phpunit": "5.4.*"
+    },
+    "config": {
+        "bin-dir": "bin/"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nshiell\\RepoInfo\\": "src/"
+        }
+    }
+}
