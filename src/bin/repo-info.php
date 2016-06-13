@@ -12,11 +12,12 @@ $script
     ->setVersion('1.0')
     ->setDescription('Remote Repository Information')
     ->setCopyright('Copyright (c) NShiell 2016')
-    /*->addParameter(new Parameter('H', 'host'    , '127.0.0.1')              , 'Host.')
-    ->addParameter(new Parameter('u', 'username', Parameter::VALUE_REQUIRED), 'User name.')
-    ->addParameter(new Parameter('p', 'password', Parameter::VALUE_REQUIRED), 'Password.')
-    ->addParameter(new Parameter('v', 'verbose' , Parameter::VALUE_NO_VALUE), 'Enable verbosity.')*/
+    ->addParameter(new Parameter('d', 'date' , '2016-05-01 05:06:07') , 'Date To List From')
     ->setProgram(function ($options, $arguments) {
+        if (!isset ($arguments[1])) {
+            throw new InvalidArgumentException('List name not provided');
+        }
+
         /** @var GuzzleHttp\ClientInterface */
         $httpClient = new GuzzleHttp\Client();
 
@@ -27,23 +28,36 @@ $script
         $api = $apiFactory->create();
 
         $repo = new Nshiell\RepoInfo\Repo\RemoteRepo($api);
-        $pullRequests = $repo->getOpenPullRequests();
+
+        switch ($arguments[1]) {
+            case $api::QUERY_PULL_REQUESTS:
+                $items = $repo->getOpenPullRequests();
+                break;
+            case $api::QUERY_ISSUES_SINCE:
+                $items = $repo->getIssuesSince(new DateTime($options['date']));
+                break;
+            default:
+                throw new InvalidArgumentException('List name not known: '.$arguments[1]);
+        }
+
+
         //echo json_encode($pullRequests, JSON_PRETTY_PRINT);
-        //$pullRequests = json_decode(file_get_contents('/home/nicholas/Documents/RepoInfo/d.json'));
+        //$items = json_decode(file_get_contents('/home/nicholas/Documents/RepoInfo/d.json'));
 
-        $pullRequestsInformation = array_map(function ($pullRequest) {
+        $itemsInformation = array_map(function ($item) {
             return [
-                $pullRequest->id,
-                $pullRequest->user->login,
-                $pullRequest->created_at,
-                $pullRequest->head->label
+                $item->id,
+                $item->user->login,
+                $item->created_at,
+                $item->title
             ];
-        }, $pullRequests);
+        }, $items);
 
-        array_unshift($pullRequestsInformation, ['ID', 'User', 'Created', 'Label']);
+        array_unshift($itemsInformation, ['ID', 'User', 'Created', 'Title']);
 
+        echo ucwords(str_replace('-', ' ', $arguments[1])) . ':' . PHP_EOL;
         echo IO::strPadAll(
-            $pullRequestsInformation,
+            $itemsInformation,
             [ // alignment
                 3 => STR_PAD_RIGHT,
             ],

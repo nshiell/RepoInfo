@@ -2,6 +2,7 @@
 namespace Nshiell\RepoInfo\Repo;
 
 use Nshiell\RepoInfo\Api\ApiInterface;
+use DateTime;
 
 /**
  * Represents a source code repository
@@ -20,8 +21,15 @@ abstract class AbstractRepo
     }
 
     /**
-     * Shows all the open pull requests in the repo
+     * Gets all the open pull requests in the repo
      * @return array requests
      */
     abstract public function getOpenPullRequests();
+
+    /**
+     * Gets all issues after the datetime provided
+     * @param  DateTime $dateTime
+     * @return array issues
+     */
+    abstract public function getIssuesSince(DateTime $dateTime);
 }
